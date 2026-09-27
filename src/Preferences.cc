@@ -115,7 +115,7 @@ void Preferences::init() {
 	const QString found_family{QFontInfo{font}.family()};
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
-	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
+	this->defaultmap["editor/syntaxhighlight"] = "Tomorrow Night";
 
 #if defined (Q_OS_MAC)
 	this->defaultmap["editor/ctrlmousewheelzoom"] = false;
@@ -187,7 +187,7 @@ void Preferences::init() {
 	this->actionTriggered(this->prefsAction3DView);
 
 	// 3D View pane
-	this->defaultmap["3dview/colorscheme"] = "Cornfield";
+	this->defaultmap["3dview/colorscheme"] = "Tomorrow Night";
 
 	// Advanced pane	
 	const int absolute_max = (sizeof(void*) == 8) ? 1024 * 1024 : 2048; // 1TB for 64bit or 2GB for 32bit
