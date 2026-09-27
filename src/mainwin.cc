@@ -30,6 +30,8 @@
 #include "GeometryCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
+#include "AiPanel.h"
+#include "Dock.h"
 #include "OpenSCADApp.h"
 #include "parsersettings.h"
 #include "rendersettings.h"
@@ -206,6 +208,18 @@ MainWindow::MainWindow(const QStringList &filenames)
 	this->parameterDock->setAction(this->windowActionHideCustomizer);
 	this->errorLogDock->setConfigKey("view/hideErrorLog");
 	this->errorLogDock->setAction(this->windowActionHideErrorLog);
+
+	Dock *assistantDock = new Dock(this);
+	assistantDock->setObjectName("assistantDock");
+	assistantDock->setWindowTitle(_("ASSIST"));
+	assistantDock->setConfigKey("view/hideAssistant");
+	assistantDock->setWidget(new AiPanel(assistantDock));
+	addDockWidget(Qt::RightDockWidgetArea, assistantDock);
+	QAction *assistantToggleAction = assistantDock->toggleViewAction();
+	assistantToggleAction->setText(_("Assistant panel"));
+	menuWindow->addAction(assistantToggleAction);
+	QSettingsCached assistantSettings;
+	assistantDock->setVisible(!assistantSettings.value("view/hideAssistant", false).toBool());
 
 	this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
 	updateStatusBar(nullptr);

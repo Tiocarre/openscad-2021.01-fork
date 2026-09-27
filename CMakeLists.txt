@@ -594,6 +594,7 @@ set(GUI_SOURCES
   src/tabmanager.cc
   src/tabwidget.cc
   src/AutoUpdater.cc
+  src/AiPanel.cc
   src/Console.cc
   src/Dock.cc
   src/ErrorLog.cc

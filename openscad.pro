@@ -376,6 +376,7 @@ HEADERS += src/version_check.h \
            src/CsgInfo.h \
            \
            src/Dock.h \
+           src/AiPanel.h \
            src/Console.h \
            src/ErrorLog.h \
            src/AutoUpdater.h \
@@ -535,6 +536,7 @@ SOURCES += \
            src/WindowManager.cc \
            src/UIUtils.cc \
            src/Dock.cc \
+           src/AiPanel.cc \
            src/Console.cc \
            src/ErrorLog.cc \
            src/FontListDialog.cc \
