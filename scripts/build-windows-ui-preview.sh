@@ -39,7 +39,11 @@ sed -i -e 's/--without-mpi//' -e 's/--without-python//' "$MXEDIR/src/boost.mk"
 rm -f "$MXETARGETDIR/installed/boost"
 make -C "$MXEDIR" -j"$NUMCPU" MXE_TARGETS="$MXE_TARGETS" MXE_VERBOSE=1 boost
 for library in thread_win32 program_options filesystem system regex chrono; do
-  source_library="$MXETARGETDIR/lib/libboost_${library}-mt-x64.a"
+  source_component="$library"
+  if test "$library" = thread_win32; then
+    source_component=thread
+  fi
+  source_library="$MXETARGETDIR/lib/libboost_${source_component}-mt-x64.a"
   target_library="$MXETARGETDIR/lib/libboost_${library}-mt.a"
   if test -f "$source_library"; then
     ln -sf "$(basename "$source_library")" "$target_library"
