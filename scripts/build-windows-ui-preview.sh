@@ -33,7 +33,7 @@ awk '
 ' "$MXEDIR/src/boost.mk" > /tmp/openscad-boost.mk
 mv /tmp/openscad-boost.mk "$MXEDIR/src/boost.mk"
 rm -f "$MXETARGETDIR/installed/boost"
-make -C "$MXEDIR" -j"$NUMCPU" MXE_TARGETS="$MXE_TARGETS" boost
+make -C "$MXEDIR" -j"$NUMCPU" MXE_TARGETS="$MXE_TARGETS" MXE_VERBOSE=1 boost
 for library in thread_win32 program_options filesystem system regex chrono; do
   source_library="$MXETARGETDIR/lib/libboost_${library}-mt-x64.a"
   target_library="$MXETARGETDIR/lib/libboost_${library}-mt.a"
