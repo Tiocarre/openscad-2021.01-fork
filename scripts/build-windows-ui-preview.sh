@@ -43,13 +43,16 @@ test -f "$cgal_prefix/include/CGAL/Triangulation_2_filtered_projection_traits_3.
 
 export LIB3MF_INCLUDEPATH="$MXETARGETDIR/include/lib3mf"
 export LIB3MF_LIBPATH="$MXETARGETDIR/lib"
+# Load Boost.Foreach before Qt defines its legacy `foreach` macro.
+printf '#include <boost/foreach.hpp>\n' > /tmp/openscad-mxe-preinclude.h
 
 cd "$DEPLOYDIR"
 qmake "$source_root/openscad.pro" \
   CONFIG+=release CONFIG+=deploy CONFIG+=link_pkgconfig CONFIG+=mingw-cross-env \
   CONFIG-=debug CONFIG-=experimental \
   "QMAKE_CXXFLAGS+=-I${cgal_prefix}/include" \
-  "QMAKE_LFLAGS+=-L${cgal_prefix}/lib"
+  "QMAKE_LFLAGS+=-L${cgal_prefix}/lib" \
+  "QMAKE_CXXFLAGS+=-include /tmp/openscad-mxe-preinclude.h"
 # Match the upstream cross-build workaround for parallel parser generation.
 touch -t 200012121010 "$source_root/src/parser_yacc.h" \
   "$source_root/src/parser_yacc.cpp" "$source_root/src/parser_yacc.hpp" \
