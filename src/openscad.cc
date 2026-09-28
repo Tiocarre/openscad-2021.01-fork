@@ -707,7 +707,8 @@ void registerDefaultIcon(QString) { }
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
 	OpenSCADApp app(argc, argv);
-	QFile workstationTheme(":/themes/workstation.qss");
+	const bool lightTheme = qgetenv("OPENSCAD_UI_THEME").compare("light", Qt::CaseInsensitive) == 0;
+	QFile workstationTheme(lightTheme ? ":/themes/workstation-light.qss" : ":/themes/workstation.qss");
 	if (workstationTheme.open(QIODevice::ReadOnly)) {
 		app.setStyleSheet(QString::fromUtf8(workstationTheme.readAll()));
 	}

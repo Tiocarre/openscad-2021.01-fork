@@ -115,11 +115,12 @@ cp -a "$MXETARGETDIR/etc/fonts/." "$output/fonts/"
 tar -C "$source_root" --exclude='.git' --exclude='.git*' -cf - libraries | tar -C "$output" -xf -
 cp "$source_root/COPYING" "$output/"
 printf 'cube([20,20,20], center=true);\n' > "$output/cube.scad"
-printf '@echo off\r\nstart "" "%%~dp0openscad.exe" "%%~dp0cube.scad"\r\n' > "$output/Open-UI.cmd"
+printf '@echo off\r\nset OPENSCAD_UI_THEME=dark\r\nstart "" "%%~dp0openscad.exe" "%%~dp0cube.scad"\r\n' > "$output/Open-UI.cmd"
+printf '@echo off\r\nset OPENSCAD_UI_THEME=light\r\nstart "" "%%~dp0openscad.exe" "%%~dp0cube.scad"\r\n' > "$output/Open-UI-Light.cmd"
 cat > "$output/START-HERE.txt" <<'EOF'
 OpenSCAD 2021.01 — UI proposal
 
-Extract the entire artifact before running Open-UI.cmd.
+Extract the entire artifact before running Open-UI.cmd (dark) or Open-UI-Light.cmd (light).
 Press F5 to preview cube.scad, then inspect the editor, viewport, console and ASSIST.
 ASSIST is deliberately offline. Its prompt and send button are disabled.
 If you already use OpenSCAD, saved preferences take priority over theme defaults:
