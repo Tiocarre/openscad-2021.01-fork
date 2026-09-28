@@ -1,5 +1,5 @@
 # Status
 
-OpenSCAD 2021.01 is checked out at the official release commit. The shared Qt theme, dark editor/viewport defaults, and offline assistant panel are in source. No assistant backend or CAD engine changes were added. The Windows build and visual behavior are not yet verified in this environment.
+OpenSCAD 2021.01, the shared Qt theme, dark editor/viewport defaults, and offline assistant panel are in source. The CAD engine is unchanged. Windows has MSVC, but Qt 5, qmake, CMake, QScintilla, and a WSL distribution are absent; the UI is uncompiled and unseen.
 
-Next: build and launch this fork, confirm editor/viewport/console styling and preview/render/export behavior, then stop at the first milestone.
+Next: provide a configured build environment or choose the upstream WSL/MXE dependency build (several hours and tens of GB), then launch the cube preview and stop for visual feedback.
