@@ -17,6 +17,9 @@ test -f "$MXETARGETDIR/qt5/mkspecs/features/qscintilla2.prf"
 test -d "$MXETARGETDIR/include/CGAL"
 test -f "$source_root/libraries/MCAD/__init__.py"
 
+# The pinned GUI image omits Boost binaries required by the 2021.01 qmake project.
+make -C "$MXEDIR" -j"$NUMCPU" MXE_TARGETS="$MXE_TARGETS" boost
+
 # OpenSCAD 2021.01 uses a projection-traits API removed after CGAL 4.14.
 # Build that dependency for this preview only; keep project sources untouched.
 cgal_source=/tmp/CGAL-4.14
