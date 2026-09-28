@@ -1,0 +1,22 @@
+{
+    "name" : "UI Dev TypeSafe",
+    "index" : 1201,
+    "paper" : "#ffffff",
+    "text" : "#1e1e1e",
+    "caret" : { "width" : 2, "foreground" : "#1e1e1e", "line-background" : "#f5f3f1" },
+    "colors" : {
+        "keyword1" : "#963276", "keyword2" : "#b13f91", "keyword3" : "#7f3269",
+        "comment" : "#696461", "commentline" : "#696461", "commentdoc" : "#55514f",
+        "commentdockeyword" : "#963276", "number" : "#8c561e", "string" : "#365e50",
+        "operator" : "#1e1e1e", "whitespace-foreground" : "#aaa8a3",
+        "selection-foreground" : "#261722", "selection-background" : "#edc9df",
+        "margin-background" : "#f3f2ef", "margin-foreground" : "#55514f",
+        "matched-brace-background" : "#f4e2ee", "matched-brace-foreground" : "#7f3269",
+        "unmatched-brace-background" : "#f5d4d0", "unmatched-brace-foreground" : "#6d201d",
+        "error-marker" : "#b34339", "error-indicator" : "#60b34339",
+        "error-indicator-outline" : "#b34339", "find-indicator" : "#f0d68b",
+        "find-indicator-outline" : "#8c561e", "hyperlink-indicator" : "#963276",
+        "hyperlink-indicator-outline" : "#b13f91", "hyperlink-indicator-hover" : "#7f3269",
+        "edge" : "#cfceca"
+    }
+}

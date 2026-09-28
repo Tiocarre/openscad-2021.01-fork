@@ -214,7 +214,13 @@ void TabManager::createTab(const QString &filename)
     connect(Preferences::inst(), SIGNAL(syntaxHighlightChanged(const QString&)),
                     editor, SLOT(setHighlightScheme(const QString&)));
     editor->initFont(Preferences::inst()->getValue("editor/fontfamily").toString(), Preferences::inst()->getValue("editor/fontsize").toUInt());
-    editor->setHighlightScheme(Preferences::inst()->getValue("editor/syntaxhighlight").toString());
+    QString syntaxScheme = Preferences::inst()->getValue("editor/syntaxhighlight").toString();
+    if (qgetenv("OPENSCAD_UI_DEV") == "1") {
+        const QString uiScheme = qgetenv("OPENSCAD_UI_THEME").compare("light", Qt::CaseInsensitive) == 0
+            ? "UI Dev TypeSafe" : "UI Dev Sage";
+        if (editor->colorSchemes().contains(uiScheme)) syntaxScheme = uiScheme;
+    }
+    editor->setHighlightScheme(syntaxScheme);
 
     connect(editor, SIGNAL(hyperlinkIndicatorClicked(int)), this, SLOT(onHyperlinkIndicatorClicked(int)));
 

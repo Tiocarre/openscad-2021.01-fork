@@ -126,8 +126,9 @@ OpenSCAD 2021.01 — UI proposal
 Extract the entire artifact before running Open-UI.cmd (dark) or Open-UI-Light.cmd (light).
 Press F5 to preview cube.scad, then inspect the editor, viewport, console and ASSIST.
 ASSIST is deliberately offline. Its prompt and send button are disabled.
-The UI theme follows the launcher. Editor syntax and 3D view colors follow OpenSCAD's
-color-scheme preferences; choose light or dark schemes there to match the launcher.
+The normal UI follows the launcher and preserves OpenSCAD color-scheme preferences.
+The UI dev launchers also select UI Dev Sage / UI Dev TypeSafe for editor and viewport,
+without changing saved preferences.
 This is an unsigned test build, not an installer or release.
 
 For UI development, run Open-UI-Dev.cmd or Open-UI-Dev-Light.cmd.

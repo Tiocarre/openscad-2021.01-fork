@@ -1,0 +1,22 @@
+{
+    "name" : "UI Dev Sage",
+    "index" : 1200,
+    "paper" : "#171b19",
+    "text" : "#d9dfd6",
+    "caret" : { "width" : 2, "foreground" : "#d9dfd6", "line-background" : "#202722" },
+    "colors" : {
+        "keyword1" : "#b4c993", "keyword2" : "#a4c68a", "keyword3" : "#c6dba5",
+        "comment" : "#8b978d", "commentline" : "#8b978d", "commentdoc" : "#a6afa7",
+        "commentdockeyword" : "#b4c993", "number" : "#e0b56b", "string" : "#d7c58a",
+        "operator" : "#d9dfd6", "whitespace-foreground" : "#78847a",
+        "selection-foreground" : "#f6f8f2", "selection-background" : "#43583c",
+        "margin-background" : "#1d2220", "margin-foreground" : "#a6afa7",
+        "matched-brace-background" : "#354333", "matched-brace-foreground" : "#f6f8f2",
+        "unmatched-brace-background" : "#633b38", "unmatched-brace-foreground" : "#f2f4ef",
+        "error-marker" : "#e29588", "error-indicator" : "#60e29588",
+        "error-indicator-outline" : "#e29588", "find-indicator" : "#b4c993",
+        "find-indicator-outline" : "#d9dfd6", "hyperlink-indicator" : "#a4c68a",
+        "hyperlink-indicator-outline" : "#b4c993", "hyperlink-indicator-hover" : "#c6dba5",
+        "edge" : "#354037"
+    }
+}

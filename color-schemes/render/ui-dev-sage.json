@@ -1,0 +1,18 @@
+{
+    "name" : "UI Dev Sage",
+    "index" : 2200,
+    "show-in-gui" : true,
+    "colors" : {
+        "background" : "#171b19",
+        "axes-color" : "#68746a",
+        "opencsg-face-front" : "#a6b78b",
+        "opencsg-face-back" : "#889a70",
+        "cgal-face-front" : "#a6b78b",
+        "cgal-face-back" : "#889a70",
+        "cgal-face-2d" : "#b4c993",
+        "cgal-edge-front" : "#d9dfd6",
+        "cgal-edge-back" : "#a6b78b",
+        "cgal-edge-2d" : "#b4c993",
+        "crosshair" : "#8b978d"
+    }
+}

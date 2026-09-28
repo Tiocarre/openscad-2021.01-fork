@@ -35,6 +35,7 @@
 #include "OpenSCADApp.h"
 #include "parsersettings.h"
 #include "rendersettings.h"
+#include "colormap.h"
 #include "Preferences.h"
 #include "printutils.h"
 #include "node.h"
@@ -481,6 +482,12 @@ MainWindow::MainWindow(const QStringList &filenames)
 	Preferences::inst()->apply_win(); // not sure if to be commented, checked must not be commented(done some changes in apply())
 
 	QString cs = Preferences::inst()->getValue("3dview/colorscheme").toString();
+	// Match the external UI theme without changing the user's saved preferences.
+	if (qgetenv("OPENSCAD_UI_DEV") == "1") {
+		const QString uiScheme = qgetenv("OPENSCAD_UI_THEME").compare("light", Qt::CaseInsensitive) == 0
+			? "UI Dev TypeSafe" : "UI Dev Sage";
+		if (ColorMap::inst()->findColorScheme(uiScheme.toStdString())) cs = uiScheme;
+	}
 	this->setColorScheme(cs);
 
 	//find and replace panel

@@ -876,7 +876,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 			watchTheme();
 			QObject::connect(watcher, &QFileSystemWatcher::fileChanged, reloadTimer, [reloadTimer]() { reloadTimer->start(); });
 			QObject::connect(watcher, &QFileSystemWatcher::directoryChanged, reloadTimer, [reloadTimer]() { reloadTimer->start(); });
-			QObject::connect(reloadTimer, &QTimer::timeout, &app, [&, externalThemePath, watchTheme]() {
+			QObject::connect(reloadTimer, &QTimer::timeout, &app, [applyTheme, embeddedStyle, externalThemePath, watchTheme]() {
 				watchTheme();
 				QFile externalTheme(externalThemePath);
 				UiThemeStyle candidate;
