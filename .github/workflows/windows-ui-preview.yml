@@ -38,6 +38,15 @@ jobs:
       - name: Check the 2021.01 baseline
         run: git merge-base --is-ancestor 41f58fe57c03457a3a8b4dc541ef5654ec3e8c78 HEAD
 
+      - name: Fetch the compatible CGAL source release
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 \
+            https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.14/CGAL-4.14.tar.xz \
+            --output "$RUNNER_TEMP/CGAL-4.14.tar.xz"
+          echo '1f22da098a136c26fd51c7ac401212865dce7cc5110ca6a083ef6f09ead5c03a002bfd16752cb298427b84bd5b4900b52c6514f97ccd0e199ffb28e9fe640c43  '"$RUNNER_TEMP/CGAL-4.14.tar.xz" | sha512sum --check
+
       - name: Compile Windows GUI using prebuilt dependencies
         shell: bash
         run: |
@@ -48,6 +57,7 @@ jobs:
             --user "$(id -u):$(id -g)" \
             --entrypoint /bin/bash \
             -e MXEDIR=/mxe -e NUMCPU=2 -e BUILD_IMAGE \
+            -v "$RUNNER_TEMP:/runner-temp:ro" \
             -v "$GITHUB_WORKSPACE:/work" -w /work \
             "$BUILD_IMAGE" scripts/build-windows-ui-preview.sh \
             2>&1 | tee build-logs/windows-ui-preview.log

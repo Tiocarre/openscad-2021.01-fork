@@ -17,13 +17,38 @@ test -f "$MXETARGETDIR/qt5/mkspecs/features/qscintilla2.prf"
 test -d "$MXETARGETDIR/include/CGAL"
 test -f "$source_root/libraries/MCAD/__init__.py"
 
+# OpenSCAD 2021.01 uses a projection-traits API removed after CGAL 4.14.
+# Build that dependency for this preview only; keep project sources untouched.
+cgal_source=/tmp/CGAL-4.14
+cgal_prefix=/tmp/cgal-4.14
+tar -xf /runner-temp/CGAL-4.14.tar.xz -C /tmp
+cd "$cgal_source"
+"${MXE_TARGETS}-cmake" . \
+  -DCMAKE_INSTALL_PREFIX="$cgal_prefix" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_Qt5=OFF \
+  -DWITH_CGAL_ImageIO=OFF \
+  -DGMP_INCLUDE_DIR="$MXETARGETDIR/include" \
+  -DGMP_LIBRARIES="$MXETARGETDIR/lib/libgmp.a" \
+  -DGMPXX_INCLUDE_DIR="$MXETARGETDIR/include" \
+  -DGMPXX_LIBRARIES="$MXETARGETDIR/lib/libgmpxx.a" \
+  -DMPFR_INCLUDE_DIR="$MXETARGETDIR/include" \
+  -DMPFR_LIBRARIES="$MXETARGETDIR/lib/libmpfr.a" \
+  -DBOOST_ROOT="$MXETARGETDIR" \
+  -DBoost_USE_STATIC_LIBS=ON
+make -j"$NUMCPU"
+make -j1 install
+test -f "$cgal_prefix/include/CGAL/Triangulation_2_filtered_projection_traits_3.h"
+
 export LIB3MF_INCLUDEPATH="$MXETARGETDIR/include/lib3mf"
 export LIB3MF_LIBPATH="$MXETARGETDIR/lib"
 
 cd "$DEPLOYDIR"
 qmake "$source_root/openscad.pro" \
   CONFIG+=release CONFIG+=deploy CONFIG+=link_pkgconfig CONFIG+=mingw-cross-env \
-  CONFIG-=debug CONFIG-=experimental
+  CONFIG-=debug CONFIG-=experimental \
+  "QMAKE_CXXFLAGS+=-I${cgal_prefix}/include" \
+  "QMAKE_LFLAGS+=-L${cgal_prefix}/lib"
 # Match the upstream cross-build workaround for parallel parser generation.
 touch -t 200012121010 "$source_root/src/parser_yacc.h" \
   "$source_root/src/parser_yacc.cpp" "$source_root/src/parser_yacc.hpp" \
@@ -60,6 +85,7 @@ EOF
   printf 'Source commit: %s\n' "$(git -C "$source_root" rev-parse HEAD)"
   printf 'Base: openscad-2021.01 / 41f58fe57c03457a3a8b4dc541ef5654ec3e8c78\n'
   printf 'Build image: %s\n' "$BUILD_IMAGE"
+  printf 'CGAL compatibility dependency: 4.14 (cross-built in runner)\n'
   qmake -v
   "${MXE_TARGETS}-g++" --version
 } > "$output/BUILD-INFO.txt"
