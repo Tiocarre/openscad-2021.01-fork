@@ -2,11 +2,9 @@
 
 The interface uses a dark technical workstation palette with compact spacing, clear panel boundaries, square corners, and a restrained green accent. Existing OpenSCAD widgets and commands remain in place.
 
-- Main surfaces: `#101419`, `#11171d`, and `#151b22`.
-- Editor and input surfaces: `#0d1217`.
-- Dividers: `#27313b` to `#35414d`.
-- Primary text: `#d4dbe3`; secondary text: `#87939e`.
-- Accent: `#71b7a2`; status colors are reserved for functional states.
-- UI chrome uses a compact monospace stack (`Consolas`, `Cascadia Mono`, fallback monospace). The editor keeps OpenSCAD's font controls and uses the built-in `Tomorrow Night` syntax and viewport schemes by default.
+- Surfaces: `#101419` base, `#11171d` chrome, `#151b22` panels, `#0d1217` editor and inputs.
+- Dividers: `#27313b` to `#35414d`; compact 3–12 px spacing; square corners.
+- Text: `#d4dbe3` primary, `#87939e` secondary; accent `#71b7a2`. Functional states alone use status colors.
+- UI chrome uses `Consolas`, `Cascadia Mono`, or the system monospace fallback. Existing editor font controls remain; `Tomorrow Night` is the default editor syntax and viewport palette.
 
-Use `themes/workstation.qss` for shared Qt styling. Keep component styling tied to object names and avoid replacing functional OpenSCAD widgets for appearance alone. The `AiPanel` is an isolated presentation widget; connecting a future service belongs behind a separate interface and is outside this milestone.
+`themes/workstation.qss` styles the main window, menus, toolbars, dock titles, tabs, controls, scrollbars, status bar, and console. The existing editor and viewport use OpenSCAD's own color schemes. The separate `AiPanel` is an offline presentation widget. Existing functional OpenSCAD widgets and commands stay in place.
