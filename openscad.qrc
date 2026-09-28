@@ -1,7 +1,7 @@
 <RCC>
   <qresource prefix="/">
-    <file>themes/workstation.qss</file>
-    <file>themes/workstation-light.qss</file>
+    <file>dev-ui/dark.qss</file>
+    <file>dev-ui/light.qss</file>
     <file>icons/prefs3DPrint.png</file>
     <file>src/PrintInitDialog.html</file>
     <file>src/OctoPrintInfo.html</file>

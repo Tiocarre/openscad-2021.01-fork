@@ -8,6 +8,7 @@ on:
       - '.github/workflows/windows-ui-preview.yml'
       - 'scripts/build-windows-ui-preview.sh'
       - 'src/**'
+      - 'dev-ui/**'
       - 'themes/**'
       - 'features/**'
       - '*.pri'

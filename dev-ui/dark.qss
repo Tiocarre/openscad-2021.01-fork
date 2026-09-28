@@ -1,4 +1,28 @@
-/* TypeSafe-inspired light tokens are supplied by OpenSCAD's active UI palette. */
+/* UI DEV PALETTE: edit these values; Qt tokens below are refreshed on save. */
+/* @palette canvas=#151d19 */
+/* @palette canvas-end=#19251e */
+/* @palette panel=#1c2620 */
+/* @palette panel-end=#203128 */
+/* @palette surface=#222d26 */
+/* @palette raised=#26332b */
+/* @palette input=#111713 */
+/* @palette text=#e5eee8 */
+/* @palette muted=#b3c2b8 */
+/* @palette disabled-text=#9cab9f */
+/* @palette disabled-bg=#242d27 */
+/* @palette border=#3c4d42 */
+/* @palette border-strong=#5b7162 */
+/* @palette accent=#b5dfc2 */
+/* @palette accent-strong=#89c99f */
+/* @palette accent-soft=#2b4636 */
+/* @palette accent-pressed=#355742 */
+/* @palette focus=#b5dfc2 */
+/* @palette selection=#426b51 */
+/* @palette selection-text=#f3faf4 */
+/* @palette tooltip-bg=#0e1511 */
+/* @palette tooltip-text=#f3faf4 */
+/* @palette assistant-status=#b9d99d */
+/* @palette assistant-secondary=#b3c2b8 */
 QWidget {
     color: @text@;
     font-family: "Consolas", "Cascadia Mono", monospace;

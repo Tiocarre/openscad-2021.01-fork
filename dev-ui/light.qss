@@ -1,4 +1,28 @@
-/* Workstation dark tokens are supplied by OpenSCAD's active UI palette. */
+/* UI DEV PALETTE: edit these values; Qt tokens below are refreshed on save. */
+/* @palette canvas=#f5f2f4 */
+/* @palette canvas-end=#eee8ed */
+/* @palette panel=#f0eaee */
+/* @palette panel-end=#e9e1e7 */
+/* @palette surface=#f8f5f7 */
+/* @palette raised=#f4edf1 */
+/* @palette input=#ffffff */
+/* @palette text=#2d272c */
+/* @palette muted=#62575f */
+/* @palette disabled-text=#71666e */
+/* @palette disabled-bg=#ece7ea */
+/* @palette border=#d5cbd1 */
+/* @palette border-strong=#b9a8b2 */
+/* @palette accent=#b42f64 */
+/* @palette accent-strong=#98234f */
+/* @palette accent-soft=#f4dce6 */
+/* @palette accent-pressed=#e8b7cb */
+/* @palette focus=#a82055 */
+/* @palette selection=#e9b6cb */
+/* @palette selection-text=#421b2b */
+/* @palette tooltip-bg=#33262d */
+/* @palette tooltip-text=#fff8fb */
+/* @palette assistant-status=#8e1747 */
+/* @palette assistant-secondary=#574c53 */
 QWidget {
     color: @text@;
     font-family: "Consolas", "Cascadia Mono", monospace;

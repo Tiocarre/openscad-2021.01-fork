@@ -54,8 +54,14 @@
 #include <fstream>
 #include <QFile>
 #include <QColor>
+#include <QDir>
+#include <QFileInfo>
+#include <QFileSystemWatcher>
 #include <QMap>
 #include <QPalette>
+#include <QRegularExpression>
+#include <QSet>
+#include <QTimer>
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
@@ -707,91 +713,186 @@ void registerDefaultIcon(QString applicationFilePath) {
 void registerDefaultIcon(QString) { }
 #endif
 
+namespace {
+struct UiThemeStyle {
+	QString styleSheet;
+	QMap<QString, QColor> colors;
+};
+
+static const QSet<QString> uiThemePaletteKeys = QSet<QString>()
+	<< "canvas" << "canvas-end" << "panel" << "panel-end" << "surface" << "raised"
+	<< "input" << "text" << "muted" << "disabled-text" << "disabled-bg" << "border"
+	<< "border-strong" << "accent" << "accent-strong" << "accent-soft" << "accent-pressed"
+	<< "focus" << "selection" << "selection-text" << "tooltip-bg" << "tooltip-text"
+	<< "assistant-status" << "assistant-secondary";
+
+bool parseUiThemeStyle(const QByteArray &source, UiThemeStyle &theme, QString &error)
+{
+	QString rawStyle = QString::fromUtf8(source);
+	if (rawStyle.trimmed().isEmpty()) {
+		error = "empty stylesheet";
+		return false;
+	}
+
+	QMap<QString, QColor> colors;
+	const QRegularExpression paletteEntry("@palette\\s+([a-z-]+)\\s*=\\s*(#[0-9A-Fa-f]{6})");
+	auto match = paletteEntry.globalMatch(rawStyle);
+	while (match.hasNext()) {
+		const auto entry = match.next();
+		const QColor color(entry.captured(2));
+		if (!color.isValid()) {
+			error = QString("invalid palette color for %1").arg(entry.captured(1));
+			return false;
+		}
+		colors.insert(entry.captured(1), color);
+	}
+	for (const auto &key : uiThemePaletteKeys) {
+		if (!colors.contains(key)) {
+			error = QString("missing palette token %1").arg(key);
+			return false;
+		}
+	}
+
+	QString styleSheet = rawStyle;
+	for (auto color = colors.constBegin(); color != colors.constEnd(); ++color) {
+		styleSheet.replace(QString("@%1@").arg(color.key()), color.value().name());
+	}
+	if (styleSheet.contains(QRegularExpression("@[a-z-]+@"))) {
+		error = "unresolved stylesheet token";
+		return false;
+	}
+
+	// Qt's stylesheet API does not expose parse errors. Catch malformed block
+	// structure here so a broken external edit cannot replace the working theme.
+	QString structure = styleSheet;
+	structure.remove(QRegularExpression("/\\*.*?\\*/", QRegularExpression::DotMatchesEverythingOption));
+	int braces = 0;
+	int blockStart = -1;
+	QChar quote;
+	for (int i = 0; i < structure.size(); ++i) {
+		const QChar ch = structure.at(i);
+		if (!quote.isNull()) {
+			if (ch == quote) quote = QChar();
+			else if (ch == QLatin1Char('\\')) continue;
+			continue;
+		}
+		if (ch == QLatin1Char('\'') || ch == QLatin1Char('"')) quote = ch;
+		else if (ch == QLatin1Char('{')) {
+			if (braces++ != 0 || structure.left(i).trimmed().isEmpty()) {
+				error = "invalid stylesheet rule";
+				return false;
+			}
+			blockStart = i + 1;
+		} else if (ch == QLatin1Char('}')) {
+			if (--braces != 0 || blockStart < 0) {
+				error = "unbalanced stylesheet braces";
+				return false;
+			}
+			const QStringList declarations = structure.mid(blockStart, i - blockStart).split(QLatin1Char(';'));
+			for (const QString &declaration : declarations) {
+				const QString trimmed = declaration.trimmed();
+				if (trimmed.isEmpty()) continue;
+				const int colon = trimmed.indexOf(QLatin1Char(':'));
+				if (colon <= 0 || trimmed.mid(colon + 1).trimmed().isEmpty()) {
+					error = "invalid stylesheet declaration";
+					return false;
+				}
+			}
+			blockStart = -1;
+		}
+	}
+	if (braces != 0 || !quote.isNull()) {
+		error = "unbalanced stylesheet braces or quotes";
+		return false;
+	}
+
+	theme.styleSheet = styleSheet;
+	theme.colors = colors;
+	return true;
+}
+}
+
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
 	OpenSCADApp app(argc, argv);
 	const bool lightTheme = qgetenv("OPENSCAD_UI_THEME").compare("light", Qt::CaseInsensitive) == 0;
-	QFile workstationTheme(lightTheme ? ":/themes/workstation-light.qss" : ":/themes/workstation.qss");
-	if (workstationTheme.open(QIODevice::ReadOnly)) {
-		QMap<QString, QColor> colors;
-		if (lightTheme) {
-			colors["canvas"] = QColor("#f5f2f4");
-			colors["canvas-end"] = QColor("#eee8ed");
-			colors["panel"] = QColor("#f0eaee");
-			colors["panel-end"] = QColor("#e9e1e7");
-			colors["surface"] = QColor("#f8f5f7");
-			colors["raised"] = QColor("#f4edf1");
-			colors["input"] = QColor("#ffffff");
-			colors["text"] = QColor("#2d272c");
-			colors["muted"] = QColor("#62575f");
-			colors["disabled-text"] = QColor("#71666e");
-			colors["disabled-bg"] = QColor("#ece7ea");
-			colors["border"] = QColor("#d5cbd1");
-			colors["border-strong"] = QColor("#b9a8b2");
-			colors["accent"] = QColor("#b42f64");
-			colors["accent-strong"] = QColor("#98234f");
-			colors["accent-soft"] = QColor("#f4dce6");
-			colors["accent-pressed"] = QColor("#e8b7cb");
-			colors["focus"] = QColor("#a82055");
-			colors["selection"] = QColor("#e9b6cb");
-			colors["selection-text"] = QColor("#421b2b");
-			colors["tooltip-bg"] = QColor("#33262d");
-			colors["tooltip-text"] = QColor("#fff8fb");
-			colors["assistant-status"] = QColor("#8e1747");
-			colors["assistant-secondary"] = QColor("#574c53");
-		} else {
-			colors["canvas"] = QColor("#151d19");
-			colors["canvas-end"] = QColor("#19251e");
-			colors["panel"] = QColor("#1c2620");
-			colors["panel-end"] = QColor("#203128");
-			colors["surface"] = QColor("#222d26");
-			colors["raised"] = QColor("#26332b");
-			colors["input"] = QColor("#111713");
-			colors["text"] = QColor("#e5eee8");
-			colors["muted"] = QColor("#b3c2b8");
-			colors["disabled-text"] = QColor("#9cab9f");
-			colors["disabled-bg"] = QColor("#242d27");
-			colors["border"] = QColor("#3c4d42");
-			colors["border-strong"] = QColor("#5b7162");
-			colors["accent"] = QColor("#b5dfc2");
-			colors["accent-strong"] = QColor("#89c99f");
-			colors["accent-soft"] = QColor("#2b4636");
-			colors["accent-pressed"] = QColor("#355742");
-			colors["focus"] = QColor("#b5dfc2");
-			colors["selection"] = QColor("#426b51");
-			colors["selection-text"] = QColor("#f3faf4");
-			colors["tooltip-bg"] = QColor("#0e1511");
-			colors["tooltip-text"] = QColor("#f3faf4");
-			colors["assistant-status"] = QColor("#b9d99d");
-			colors["assistant-secondary"] = QColor("#b3c2b8");
-		}
+	const QString embeddedThemePath = lightTheme ? ":/dev-ui/light.qss" : ":/dev-ui/dark.qss";
+	QFile embeddedTheme(embeddedThemePath);
+	UiThemeStyle embeddedStyle;
+	QString themeError;
+	if (!embeddedTheme.open(QIODevice::ReadOnly) || !parseUiThemeStyle(embeddedTheme.readAll(), embeddedStyle, themeError)) {
+		qWarning().noquote() << "[UI] Unable to load embedded theme:" << themeError;
+	} else {
+		UiThemeStyle activeStyle = embeddedStyle;
+		const bool uiDev = qgetenv("OPENSCAD_UI_DEV") == "1";
+		QString themeDirectory = QString::fromLocal8Bit(qgetenv("OPENSCAD_UI_THEME_DIR"));
+		if (themeDirectory.isEmpty()) themeDirectory = QDir(QCoreApplication::applicationDirPath()).filePath("dev-ui");
+		if (QDir::isRelativePath(themeDirectory)) themeDirectory = QDir::cleanPath(QCoreApplication::applicationDirPath() + "/" + themeDirectory);
+		const QString externalThemePath = QDir(themeDirectory).filePath(lightTheme ? "light.qss" : "dark.qss");
 
-		QString styleSheet = QString::fromUtf8(workstationTheme.readAll());
-		for (auto color = colors.constBegin(); color != colors.constEnd(); ++color) {
-			styleSheet.replace(QString("@%1@").arg(color.key()), color.value().name());
-		}
-		app.setStyleSheet(styleSheet);
-
-		QPalette palette = app.palette();
-		palette.setColor(QPalette::Window, colors["canvas"]);
-		palette.setColor(QPalette::WindowText, colors["text"]);
-		palette.setColor(QPalette::Base, colors["input"]);
-		palette.setColor(QPalette::AlternateBase, colors["surface"]);
-		palette.setColor(QPalette::Text, colors["text"]);
-		palette.setColor(QPalette::Button, colors["raised"]);
-		palette.setColor(QPalette::ButtonText, colors["text"]);
-		palette.setColor(QPalette::Highlight, colors["selection"]);
-		palette.setColor(QPalette::HighlightedText, colors["selection-text"]);
-		palette.setColor(QPalette::ToolTipBase, colors["tooltip-bg"]);
-		palette.setColor(QPalette::ToolTipText, colors["tooltip-text"]);
-		palette.setColor(QPalette::Link, colors["accent-strong"]);
-		palette.setColor(QPalette::Disabled, QPalette::WindowText, colors["disabled-text"]);
-		palette.setColor(QPalette::Disabled, QPalette::Text, colors["disabled-text"]);
-		palette.setColor(QPalette::Disabled, QPalette::ButtonText, colors["disabled-text"]);
+		auto applyTheme = [&app](const UiThemeStyle &style) {
+			app.setStyleSheet(style.styleSheet);
+			QPalette palette = app.palette();
+			palette.setColor(QPalette::Window, style.colors["canvas"]);
+			palette.setColor(QPalette::WindowText, style.colors["text"]);
+			palette.setColor(QPalette::Base, style.colors["input"]);
+			palette.setColor(QPalette::AlternateBase, style.colors["surface"]);
+			palette.setColor(QPalette::Text, style.colors["text"]);
+			palette.setColor(QPalette::Button, style.colors["raised"]);
+			palette.setColor(QPalette::ButtonText, style.colors["text"]);
+			palette.setColor(QPalette::Highlight, style.colors["selection"]);
+			palette.setColor(QPalette::HighlightedText, style.colors["selection-text"]);
+			palette.setColor(QPalette::ToolTipBase, style.colors["tooltip-bg"]);
+			palette.setColor(QPalette::ToolTipText, style.colors["tooltip-text"]);
+			palette.setColor(QPalette::Link, style.colors["accent-strong"]);
+			palette.setColor(QPalette::Disabled, QPalette::WindowText, style.colors["disabled-text"]);
+			palette.setColor(QPalette::Disabled, QPalette::Text, style.colors["disabled-text"]);
+			palette.setColor(QPalette::Disabled, QPalette::ButtonText, style.colors["disabled-text"]);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-		palette.setColor(QPalette::PlaceholderText, colors["muted"]);
+			palette.setColor(QPalette::PlaceholderText, style.colors["muted"]);
 #endif
-		app.setPalette(palette);
+			app.setPalette(palette);
+		};
+
+		if (uiDev) {
+			QFile externalTheme(externalThemePath);
+			if (externalTheme.open(QIODevice::ReadOnly)) {
+				UiThemeStyle candidate;
+				if (parseUiThemeStyle(externalTheme.readAll(), candidate, themeError)) activeStyle = candidate;
+				else qWarning().noquote() << "[UI dev] Invalid external theme; using embedded theme:" << themeError;
+			} else {
+				qWarning().noquote() << "[UI dev] External theme unavailable; using embedded theme:" << externalThemePath;
+			}
+			qInfo().noquote() << "[UI dev] Theme file:" << externalThemePath;
+
+			auto watcher = new QFileSystemWatcher(&app);
+			auto reloadTimer = new QTimer(&app);
+			reloadTimer->setSingleShot(true);
+			reloadTimer->setInterval(180);
+			auto watchTheme = [watcher, externalThemePath, themeDirectory]() {
+				if (QFileInfo::exists(externalThemePath) && !watcher->files().contains(externalThemePath)) watcher->addPath(externalThemePath);
+				if (QFileInfo::exists(themeDirectory) && !watcher->directories().contains(themeDirectory)) watcher->addPath(themeDirectory);
+			};
+			watchTheme();
+			QObject::connect(watcher, &QFileSystemWatcher::fileChanged, reloadTimer, [reloadTimer]() { reloadTimer->start(); });
+			QObject::connect(watcher, &QFileSystemWatcher::directoryChanged, reloadTimer, [reloadTimer]() { reloadTimer->start(); });
+			QObject::connect(reloadTimer, &QTimer::timeout, &app, [&, externalThemePath, watchTheme]() {
+				watchTheme();
+				QFile externalTheme(externalThemePath);
+				UiThemeStyle candidate;
+				QString error;
+				if (externalTheme.open(QIODevice::ReadOnly) && parseUiThemeStyle(externalTheme.readAll(), candidate, error)) {
+					applyTheme(candidate);
+					qInfo().noquote() << "[UI dev] Reloaded theme:" << externalThemePath;
+					LOG(message_group::None, Location::NONE, "", "UI dev: reloaded theme %1$s", externalThemePath.toStdString());
+				} else {
+					applyTheme(embeddedStyle);
+					qWarning().noquote() << "[UI dev] Invalid or missing theme; reverted to embedded theme:" << error;
+					LOG(message_group::Warning, Location::NONE, "", "UI dev: invalid or missing theme; using embedded theme");
+				}
+			});
+		}
+		applyTheme(activeStyle);
 	}
 
 	// set up groups for QSettings

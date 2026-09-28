@@ -806,6 +806,13 @@ QString ScintillaEditor::selectedText()
 
 bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
+	if (obj == qsci && e->type() == QEvent::PaletteChange) {
+		const QPalette uiPalette = QApplication::palette();
+		qsci->setCallTipsBackgroundColor(uiPalette.color(QPalette::ToolTipBase));
+		qsci->setCallTipsForegroundColor(uiPalette.color(QPalette::ToolTipText));
+		qsci->setCallTipsHighlightColor(uiPalette.color(QPalette::Highlight));
+	}
+
 	bool enableNumberScrollWheel = Settings::Settings::inst()->get(Settings::Settings::enableNumberScrollWheel).toBool();
 
 	if(obj == qsci->viewport() && enableNumberScrollWheel)

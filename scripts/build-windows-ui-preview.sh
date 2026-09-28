@@ -110,6 +110,7 @@ output="$source_root/dist/openscad-ui-preview"
 mkdir -p "$output/fonts"
 cp release/openscad.exe release/openscad.com "$output/"
 cp -a "$source_root/color-schemes" "$source_root/templates" "$source_root/examples" "$output/"
+cp -a "$source_root/dev-ui" "$output/dev-ui"
 cp -a "$source_root/fonts/10-liberation.conf" "$source_root/fonts/Liberation-2.00.1" "$output/fonts/"
 cp -a "$MXETARGETDIR/etc/fonts/." "$output/fonts/"
 tar -C "$source_root" --exclude='.git' --exclude='.git*' -cf - libraries | tar -C "$output" -xf -
@@ -117,6 +118,8 @@ cp "$source_root/COPYING" "$output/"
 printf 'cube([20,20,20], center=true);\n' > "$output/cube.scad"
 printf '@echo off\r\nset OPENSCAD_UI_THEME=dark\r\nstart "" "%%~dp0openscad.exe" "%%~dp0cube.scad"\r\n' > "$output/Open-UI.cmd"
 printf '@echo off\r\nset OPENSCAD_UI_THEME=light\r\nstart "" "%%~dp0openscad.exe" "%%~dp0cube.scad"\r\n' > "$output/Open-UI-Light.cmd"
+printf '@echo off\r\nset OPENSCAD_UI_DEV=1\r\nset OPENSCAD_UI_THEME=dark\r\nset OPENSCAD_UI_THEME_DIR=%%~dp0dev-ui\r\nstart "" "%%~dp0openscad.exe" "%%~dp0cube.scad"\r\n' > "$output/Open-UI-Dev.cmd"
+printf '@echo off\r\nset OPENSCAD_UI_DEV=1\r\nset OPENSCAD_UI_THEME=light\r\nset OPENSCAD_UI_THEME_DIR=%%~dp0dev-ui\r\nstart "" "%%~dp0openscad.exe" "%%~dp0cube.scad"\r\n' > "$output/Open-UI-Dev-Light.cmd"
 cat > "$output/START-HERE.txt" <<'EOF'
 OpenSCAD 2021.01 — UI proposal
 
@@ -126,6 +129,11 @@ ASSIST is deliberately offline. Its prompt and send button are disabled.
 The UI theme follows the launcher. Editor syntax and 3D view colors follow OpenSCAD's
 color-scheme preferences; choose light or dark schemes there to match the launcher.
 This is an unsigned test build, not an installer or release.
+
+For UI development, run Open-UI-Dev.cmd or Open-UI-Dev-Light.cmd.
+Edit dev-ui/dark.qss or dev-ui/light.qss and save; the active theme reloads automatically.
+The @palette comments at the top define colors used by native Qt palette roles.
+Set OPENSCAD_UI_THEME_DIR to use another folder containing dark.qss and light.qss.
 EOF
 {
   printf 'Source commit: %s\n' "$(git -C "$source_root" rev-parse HEAD)"
