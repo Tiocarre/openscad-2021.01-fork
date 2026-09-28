@@ -40,19 +40,30 @@ cd "$cgal_source"
 make -j"$NUMCPU"
 make -j1 install
 test -f "$cgal_prefix/include/CGAL/Triangulation_2_filtered_projection_traits_3.h"
+# Keep Qt's foreach keyword out of this legacy CGAL/Boost declaration.
+python3 - "$cgal_prefix/include/CGAL/Iterator_range.h" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+source = path.read_text()
+guard = "#define CGAL_ITERATOR_RANGE_H\n"
+end = "#endif // CGAL_ITERATOR_RANGE_H"
+assert guard in source and end in source
+source = source.replace(guard, guard + '#pragma push_macro("foreach")\n#undef foreach\n', 1)
+source = source.replace(end, '#pragma pop_macro("foreach")\n' + end, 1)
+path.write_text(source)
+PY
 
 export LIB3MF_INCLUDEPATH="$MXETARGETDIR/include/lib3mf"
 export LIB3MF_LIBPATH="$MXETARGETDIR/lib"
-# Load Boost.Foreach before Qt defines its legacy `foreach` macro.
-printf '#include <boost/foreach.hpp>\n' > /tmp/openscad-mxe-preinclude.h
 
 cd "$DEPLOYDIR"
 qmake "$source_root/openscad.pro" \
   CONFIG+=release CONFIG+=deploy CONFIG+=link_pkgconfig CONFIG+=mingw-cross-env \
   CONFIG-=debug CONFIG-=experimental \
   "QMAKE_CXXFLAGS+=-I${cgal_prefix}/include" \
-  "QMAKE_LFLAGS+=-L${cgal_prefix}/lib" \
-  "QMAKE_CXXFLAGS+=-include /tmp/openscad-mxe-preinclude.h"
+  "QMAKE_LFLAGS+=-L${cgal_prefix}/lib"
 # Match the upstream cross-build workaround for parallel parser generation.
 touch -t 200012121010 "$source_root/src/parser_yacc.h" \
   "$source_root/src/parser_yacc.cpp" "$source_root/src/parser_yacc.hpp" \
