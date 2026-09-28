@@ -90,6 +90,7 @@ qmake "$source_root/openscad.pro" \
   CONFIG-=debug CONFIG-=experimental \
   "QMAKE_CXXFLAGS+=-I${cgal_prefix}/include" \
   "QMAKE_LFLAGS+=-L${cgal_prefix}/lib" \
+  "LIBS+=-lopengl32 -lglu32" \
   "QMAKE_CXXFLAGS+=-include /tmp/openscad-mxe-preinclude.h"
 # Match the upstream cross-build workaround for parallel parser generation.
 touch -t 200012121010 "$source_root/src/parser_yacc.h" \
