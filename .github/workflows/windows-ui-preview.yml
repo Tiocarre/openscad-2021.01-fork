@@ -57,6 +57,7 @@ jobs:
             --user "$(id -u):$(id -g)" \
             --entrypoint /bin/bash \
             -e MXEDIR=/mxe -e NUMCPU=2 -e BUILD_IMAGE -e CCACHE_DIR=/tmp/ccache \
+            -e PKG_CONFIG_PATH=/mxe/usr/x86_64-w64-mingw32.static.posix/lib/pkgconfig \
             -v "$RUNNER_TEMP:/runner-temp:ro" \
             -v "$GITHUB_WORKSPACE:/work" -w /work \
             "$BUILD_IMAGE" scripts/build-windows-ui-preview.sh \
