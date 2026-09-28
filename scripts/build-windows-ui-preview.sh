@@ -18,7 +18,13 @@ test -d "$MXETARGETDIR/include/CGAL"
 test -f "$source_root/libraries/MCAD/__init__.py"
 
 # The pinned GUI image omits Boost binaries required by the 2021.01 qmake project.
+rm -f "$MXETARGETDIR/installed/boost"
 make -C "$MXEDIR" -j"$NUMCPU" MXE_TARGETS="$MXE_TARGETS" boost
+if ! test -f "$MXETARGETDIR/lib/libboost_system-mt.a"; then
+  echo 'MXE Boost rebuild did not install the expected static libraries:' >&2
+  find "$MXETARGETDIR/lib" -maxdepth 1 -type f -name 'libboost*' -printf '%f\n' >&2
+  exit 1
+fi
 
 # OpenSCAD 2021.01 uses a projection-traits API removed after CGAL 4.14.
 # Build that dependency for this preview only; keep project sources untouched.
