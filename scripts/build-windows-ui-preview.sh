@@ -18,13 +18,34 @@ test -d "$MXETARGETDIR/include/CGAL"
 test -f "$source_root/libraries/MCAD/__init__.py"
 
 # The pinned GUI image omits Boost binaries required by the 2021.01 qmake project.
+# Its default Boost recipe only builds a minimal library set, so request the
+# components linked by this legacy project without changing OpenSCAD sources.
+awk '
+  /--without-mpi \\/ {
+    print "        --with-filesystem \\";
+    print "        --with-program_options \\";
+    print "        --with-regex \\";
+    print "        --with-chrono \\";
+    print "        --with-thread \\";
+    print "        --with-system \\";
+  }
+  { print }
+' "$MXEDIR/src/boost.mk" > /tmp/openscad-boost.mk
+mv /tmp/openscad-boost.mk "$MXEDIR/src/boost.mk"
 rm -f "$MXETARGETDIR/installed/boost"
 make -C "$MXEDIR" -j"$NUMCPU" MXE_TARGETS="$MXE_TARGETS" boost
-if ! test -f "$MXETARGETDIR/lib/libboost_system-mt.a"; then
-  echo 'MXE Boost rebuild did not install the expected static libraries:' >&2
-  find "$MXETARGETDIR/lib" -maxdepth 1 -type f -name 'libboost*' -printf '%f\n' >&2
-  exit 1
-fi
+for library in thread_win32 program_options filesystem system regex chrono; do
+  source_library="$MXETARGETDIR/lib/libboost_${library}-mt-x64.a"
+  target_library="$MXETARGETDIR/lib/libboost_${library}-mt.a"
+  if test -f "$source_library"; then
+    ln -sf "$(basename "$source_library")" "$target_library"
+  fi
+  if ! test -f "$target_library"; then
+    echo "MXE Boost rebuild did not install $target_library" >&2
+    find "$MXETARGETDIR/lib" -maxdepth 1 -type f -name 'libboost*' -printf '%f\n' >&2
+    exit 1
+  fi
+done
 
 # OpenSCAD 2021.01 uses a projection-traits API removed after CGAL 4.14.
 # Build that dependency for this preview only; keep project sources untouched.
