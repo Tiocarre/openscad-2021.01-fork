@@ -8,6 +8,8 @@
 #include <QString>
 #include <QChar>
 #include <QShortcut>
+#include <QApplication>
+#include <QPalette>
 #include <Qsci/qscicommandset.h>
 
 #include "scintillaeditor.h"
@@ -127,6 +129,10 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	lexer = nullptr;
 	scintillaLayout = new QVBoxLayout(this);
 	qsci = new QsciScintilla(this);
+	const QPalette uiPalette = QApplication::palette();
+	qsci->setCallTipsBackgroundColor(uiPalette.color(QPalette::ToolTipBase));
+	qsci->setCallTipsForegroundColor(uiPalette.color(QPalette::ToolTipText));
+	qsci->setCallTipsHighlightColor(uiPalette.color(QPalette::Highlight));
 
 	contentsRendered = false;
 	findState = 0; //FIND_HIDDEN

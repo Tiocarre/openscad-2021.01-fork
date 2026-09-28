@@ -53,6 +53,9 @@
 #include <vector>
 #include <fstream>
 #include <QFile>
+#include <QColor>
+#include <QMap>
+#include <QPalette>
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
@@ -710,7 +713,85 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	const bool lightTheme = qgetenv("OPENSCAD_UI_THEME").compare("light", Qt::CaseInsensitive) == 0;
 	QFile workstationTheme(lightTheme ? ":/themes/workstation-light.qss" : ":/themes/workstation.qss");
 	if (workstationTheme.open(QIODevice::ReadOnly)) {
-		app.setStyleSheet(QString::fromUtf8(workstationTheme.readAll()));
+		QMap<QString, QColor> colors;
+		if (lightTheme) {
+			colors["canvas"] = QColor("#f5f2f4");
+			colors["canvas-end"] = QColor("#eee8ed");
+			colors["panel"] = QColor("#f0eaee");
+			colors["panel-end"] = QColor("#e9e1e7");
+			colors["surface"] = QColor("#f8f5f7");
+			colors["raised"] = QColor("#f4edf1");
+			colors["input"] = QColor("#ffffff");
+			colors["text"] = QColor("#2d272c");
+			colors["muted"] = QColor("#62575f");
+			colors["disabled-text"] = QColor("#71666e");
+			colors["disabled-bg"] = QColor("#ece7ea");
+			colors["border"] = QColor("#d5cbd1");
+			colors["border-strong"] = QColor("#b9a8b2");
+			colors["accent"] = QColor("#b42f64");
+			colors["accent-strong"] = QColor("#98234f");
+			colors["accent-soft"] = QColor("#f4dce6");
+			colors["accent-pressed"] = QColor("#e8b7cb");
+			colors["focus"] = QColor("#a82055");
+			colors["selection"] = QColor("#e9b6cb");
+			colors["selection-text"] = QColor("#421b2b");
+			colors["tooltip-bg"] = QColor("#33262d");
+			colors["tooltip-text"] = QColor("#fff8fb");
+			colors["assistant-status"] = QColor("#8e1747");
+			colors["assistant-secondary"] = QColor("#574c53");
+		} else {
+			colors["canvas"] = QColor("#151d19");
+			colors["canvas-end"] = QColor("#19251e");
+			colors["panel"] = QColor("#1c2620");
+			colors["panel-end"] = QColor("#203128");
+			colors["surface"] = QColor("#222d26");
+			colors["raised"] = QColor("#26332b");
+			colors["input"] = QColor("#111713");
+			colors["text"] = QColor("#e5eee8");
+			colors["muted"] = QColor("#b3c2b8");
+			colors["disabled-text"] = QColor("#9cab9f");
+			colors["disabled-bg"] = QColor("#242d27");
+			colors["border"] = QColor("#3c4d42");
+			colors["border-strong"] = QColor("#5b7162");
+			colors["accent"] = QColor("#b5dfc2");
+			colors["accent-strong"] = QColor("#89c99f");
+			colors["accent-soft"] = QColor("#2b4636");
+			colors["accent-pressed"] = QColor("#355742");
+			colors["focus"] = QColor("#b5dfc2");
+			colors["selection"] = QColor("#426b51");
+			colors["selection-text"] = QColor("#f3faf4");
+			colors["tooltip-bg"] = QColor("#0e1511");
+			colors["tooltip-text"] = QColor("#f3faf4");
+			colors["assistant-status"] = QColor("#b9d99d");
+			colors["assistant-secondary"] = QColor("#b3c2b8");
+		}
+
+		QString styleSheet = QString::fromUtf8(workstationTheme.readAll());
+		for (auto color = colors.constBegin(); color != colors.constEnd(); ++color) {
+			styleSheet.replace(QString("@%1@").arg(color.key()), color.value().name());
+		}
+		app.setStyleSheet(styleSheet);
+
+		QPalette palette = app.palette();
+		palette.setColor(QPalette::Window, colors["canvas"]);
+		palette.setColor(QPalette::WindowText, colors["text"]);
+		palette.setColor(QPalette::Base, colors["input"]);
+		palette.setColor(QPalette::AlternateBase, colors["surface"]);
+		palette.setColor(QPalette::Text, colors["text"]);
+		palette.setColor(QPalette::Button, colors["raised"]);
+		palette.setColor(QPalette::ButtonText, colors["text"]);
+		palette.setColor(QPalette::Highlight, colors["selection"]);
+		palette.setColor(QPalette::HighlightedText, colors["selection-text"]);
+		palette.setColor(QPalette::ToolTipBase, colors["tooltip-bg"]);
+		palette.setColor(QPalette::ToolTipText, colors["tooltip-text"]);
+		palette.setColor(QPalette::Link, colors["accent-strong"]);
+		palette.setColor(QPalette::Disabled, QPalette::WindowText, colors["disabled-text"]);
+		palette.setColor(QPalette::Disabled, QPalette::Text, colors["disabled-text"]);
+		palette.setColor(QPalette::Disabled, QPalette::ButtonText, colors["disabled-text"]);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
+		palette.setColor(QPalette::PlaceholderText, colors["muted"]);
+#endif
+		app.setPalette(palette);
 	}
 
 	// set up groups for QSettings
