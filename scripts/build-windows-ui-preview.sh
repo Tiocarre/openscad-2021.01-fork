@@ -24,6 +24,7 @@ cgal_prefix=/tmp/cgal-4.14
 tar -xf /runner-temp/CGAL-4.14.tar.xz -C /tmp
 cd "$cgal_source"
 "${MXE_TARGETS}-cmake" . \
+  -C "$MXEDIR/src/cgal-TryRunResults.cmake" \
   -DCMAKE_INSTALL_PREFIX="$cgal_prefix" \
   -DCMAKE_BUILD_TYPE=Release \
   -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_Qt5=OFF \
@@ -35,7 +36,7 @@ cd "$cgal_source"
   -DMPFR_INCLUDE_DIR="$MXETARGETDIR/include" \
   -DMPFR_LIBRARIES="$MXETARGETDIR/lib/libmpfr.a" \
   -DBOOST_ROOT="$MXETARGETDIR" \
-  -DBoost_USE_STATIC_LIBS=ON
+  -DCGAL_Boost_USE_STATIC_LIBS=ON
 make -j"$NUMCPU"
 make -j1 install
 test -f "$cgal_prefix/include/CGAL/Triangulation_2_filtered_projection_traits_3.h"
