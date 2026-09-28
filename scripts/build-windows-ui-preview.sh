@@ -28,6 +28,8 @@ awk '
     print "        --with-chrono \\";
     print "        --with-thread \\";
     print "        --with-system \\";
+    print "        --with-serialization \\";
+    print "        --with-context \\";
   }
   { print }
 ' "$MXEDIR/src/boost.mk" > /tmp/openscad-boost.mk
