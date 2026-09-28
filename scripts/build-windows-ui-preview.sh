@@ -92,8 +92,8 @@ qmake "$source_root/openscad.pro" \
   "QMAKE_LFLAGS+=-L${cgal_prefix}/lib" \
   "QMAKE_CXXFLAGS+=-include /tmp/openscad-mxe-preinclude.h"
 # MXE's static OpenCSG archive needs OpenGL after it in GNU ld's link order.
-sed -i 's/-lopengl32 -lglu32 -lopencsg/-lopencsg -lopengl32 -lglu32/' Makefile
-grep -q -- '-lopencsg -lopengl32 -lglu32' Makefile
+sed -i 's/-lopengl32 -lglu32 -lopencsg/-lopencsg -lopengl32 -lglu32/' Makefile.Release
+grep -q -- '-lopencsg -lopengl32 -lglu32' Makefile.Release
 # Match the upstream cross-build workaround for parallel parser generation.
 touch -t 200012121010 "$source_root/src/parser_yacc.h" \
   "$source_root/src/parser_yacc.cpp" "$source_root/src/parser_yacc.hpp" \
