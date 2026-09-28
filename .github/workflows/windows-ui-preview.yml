@@ -1,0 +1,70 @@
+name: Windows UI preview
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/ui-refonte]
+    paths:
+      - '.github/workflows/windows-ui-preview.yml'
+      - 'scripts/build-windows-ui-preview.sh'
+      - 'src/**'
+      - 'themes/**'
+      - 'features/**'
+      - '*.pri'
+      - 'openscad.pro'
+      - 'openscad.qrc'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-ui-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-x64:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    env:
+      # Official Qt 5 GUI image, tag 2023-10-10. Do not follow latest.
+      BUILD_IMAGE: openscad/mxe-x86_64-gui@sha256:f9102ffddd15dd7e91f878931c42ffc2d067d3937e4880e3866c2db5eb4c3c8d
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Check the 2021.01 baseline
+        run: git merge-base --is-ancestor 41f58fe57c03457a3a8b4dc541ef5654ec3e8c78 HEAD
+
+      - name: Compile Windows GUI using prebuilt dependencies
+        shell: bash
+        run: |
+          set -eo pipefail
+          mkdir -p build-logs
+          docker pull "$BUILD_IMAGE"
+          docker run --rm --network none \
+            --user "$(id -u):$(id -g)" \
+            --entrypoint /bin/bash \
+            -e MXEDIR=/mxe -e NUMCPU=2 -e BUILD_IMAGE \
+            -v "$GITHUB_WORKSPACE:/work" -w /work \
+            "$BUILD_IMAGE" scripts/build-windows-ui-preview.sh \
+            2>&1 | tee build-logs/windows-ui-preview.log
+
+      - name: Upload portable GUI test build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: openscad-2021.01-ui-windows-x64-${{ github.sha }}
+          path: dist/openscad-ui-preview/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-ui-build-log-${{ github.run_id }}
+          path: build-logs/
+          if-no-files-found: ignore
+          retention-days: 7

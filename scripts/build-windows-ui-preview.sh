@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Thin CI wrapper around the 2021.01 qmake build. No dependency installation.
+set -eo pipefail
+
+source_root="$PWD"
+export MXEDIR="${MXEDIR:-/mxe}"
+export NUMCPU="${NUMCPU:-2}"
+source scripts/setenv-mingw-xbuild.sh 64
+
+case "$(qmake -query QT_VERSION)" in
+  5.*) ;;
+  *) echo 'This preview requires Qt 5.' >&2; exit 1 ;;
+esac
+qmake -v
+"${MXE_TARGETS}-g++" --version
+test -f "$MXETARGETDIR/qt5/mkspecs/features/qscintilla2.prf"
+test -d "$MXETARGETDIR/include/CGAL"
+test -f "$source_root/libraries/MCAD/__init__.py"
+
+export LIB3MF_INCLUDEPATH="$MXETARGETDIR/include/lib3mf"
+export LIB3MF_LIBPATH="$MXETARGETDIR/lib"
+
+cd "$DEPLOYDIR"
+qmake "$source_root/openscad.pro" \
+  CONFIG+=release CONFIG+=deploy CONFIG+=link_pkgconfig CONFIG+=mingw-cross-env \
+  CONFIG-=debug CONFIG-=experimental
+# Match the upstream cross-build workaround for parallel parser generation.
+touch -t 200012121010 "$source_root/src/parser_yacc.h" \
+  "$source_root/src/parser_yacc.cpp" "$source_root/src/parser_yacc.hpp" \
+  "$source_root/src/lexer_lex.cpp"
+make -j"$NUMCPU" release
+test -s release/openscad.exe
+
+# The upstream console wrapper allows a later Windows command-line smoke test.
+qmake "$source_root/winconsole/winconsole.pro" CONFIG+=release CONFIG-=debug
+make -j"$NUMCPU"
+test -s release/openscad.com
+
+output="$source_root/dist/openscad-ui-preview"
+mkdir -p "$output/fonts"
+cp release/openscad.exe release/openscad.com "$output/"
+cp -a "$source_root/color-schemes" "$source_root/templates" "$source_root/examples" "$output/"
+cp -a "$source_root/fonts/10-liberation.conf" "$source_root/fonts/Liberation-2.00.1" "$output/fonts/"
+cp -a "$MXETARGETDIR/etc/fonts/." "$output/fonts/"
+tar -C "$source_root" --exclude='.git' --exclude='.git*' -cf - libraries | tar -C "$output" -xf -
+cp "$source_root/COPYING" "$output/"
+printf 'cube([20,20,20], center=true);\n' > "$output/cube.scad"
+printf '@echo off\r\nstart "" "%%~dp0openscad.exe" "%%~dp0cube.scad"\r\n' > "$output/Open-UI.cmd"
+cat > "$output/START-HERE.txt" <<'EOF'
+OpenSCAD 2021.01 — UI proposal
+
+Extract the entire artifact before running Open-UI.cmd.
+Press F5 to preview cube.scad, then inspect the editor, viewport, console and ASSIST.
+ASSIST is deliberately offline. Its prompt and send button are disabled.
+If you already use OpenSCAD, saved preferences take priority over theme defaults:
+select Tomorrow Night for both editor syntax and 3D view in Preferences if needed.
+This is an unsigned test build, not an installer or release.
+EOF
+{
+  printf 'Source commit: %s\n' "$(git -C "$source_root" rev-parse HEAD)"
+  printf 'Base: openscad-2021.01 / 41f58fe57c03457a3a8b4dc541ef5654ec3e8c78\n'
+  printf 'Build image: %s\n' "$BUILD_IMAGE"
+  qmake -v
+  "${MXE_TARGETS}-g++" --version
+} > "$output/BUILD-INFO.txt"
+"${MXE_TARGETS}-objdump" -f "$output/openscad.exe"
+(cd "$output" && sha256sum openscad.exe openscad.com > SHA256SUMS.txt)
